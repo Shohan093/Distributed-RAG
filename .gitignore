@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Scala
+target/
+project/target/
+
+# Spark
+metastore_db/
+spark-warehouse/
+
+# Data
+data/raw/
+data/processed/
+data/embeddings/
+data/indexes/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
