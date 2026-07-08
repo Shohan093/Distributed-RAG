@@ -7,6 +7,7 @@ venv/
 # Scala
 target/
 project/target/
+project/project/
 
 # Spark
 metastore_db/
