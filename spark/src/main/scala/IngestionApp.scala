@@ -1,4 +1,6 @@
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
+import preprocessing.{Cleaner, Deduplicator, Chunker}
 
 object IngestionApp extends App {
 
@@ -7,19 +9,26 @@ object IngestionApp extends App {
     .master("local[*]")
     .getOrCreate()
 
-  // Reduce log noise so our own output is easier to spot
   spark.sparkContext.setLogLevel("WARN")
+  import spark.implicits._
 
-  val df = spark.read.parquet("data/raw/cc_news-train-0000.parquet")
+  for (epoch <- 1 to 3) {
+    println(s"=== PROCESSING EPOCH $epoch ===")
 
-  println("=== SCHEMA ===")
-  df.printSchema()
+    val raw = spark.read.parquet(s"data/generation$epoch/raw_tagged")
+    val rawCount = raw.count()
 
-  println("=== ROW COUNT ===")
-  println(df.count())
+    val cleaned = Cleaner.clean(raw)
+    val cleanedCount = cleaned.count()
+    val deduped = Deduplicator.deduplicate(cleaned)
+    val truncated = Chunker.truncate(deduped)
+    val dedupedCount = truncated.count()
 
-  println("=== SAMPLE ROWS (title, date, domain only) ===")
-  df.select("title", "date", "domain").show(5, truncate = 60)
+    println(s"Epoch $epoch: raw=$rawCount, after cleaning=$cleanedCount, after dedup+truncate=$dedupedCount")
 
+    truncated.write.mode("overwrite").parquet(s"data/generation$epoch/cleaned")
+  }
+
+  println("All epochs processed.")
   spark.stop()
 }

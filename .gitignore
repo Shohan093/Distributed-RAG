@@ -9,11 +9,15 @@ target/
 project/target/
 project/project/
 
+# Metals
+.metals/
+
 # Spark
 metastore_db/
 spark-warehouse/
 
 # Data
+data/
 data/raw/
 data/processed/
 data/embeddings/
