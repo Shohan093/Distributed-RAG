@@ -1,0 +1,22 @@
+models:
+  v1:
+    name: "BAAI/bge-large-en"
+    dimension: 1024
+    query_instruction: "Represent this sentence for searching relevant passages: "
+  v2:
+    name: "BAAI/bge-large-en-v1.5"
+    dimension: 1024
+    query_instruction: "Represent this sentence for searching relevant passages: "
+  v3:
+    name: "BAAI/bge-m3"
+    dimension: 1024
+    query_instruction: ""
+
+epochs:
+  - 1
+  - 2
+  - 3
+
+paths:
+  cleaned_data_template: "data/generation{epoch}/cleaned"
+  embeddings_output_template: "embeddings/generation{epoch}/{model_key}"
