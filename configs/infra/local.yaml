@@ -1,0 +1,28 @@
+# Single-process dev/smoke-test profile: no Docker, no JVM services running.
+# Spark runs in local[*] mode inside the calling Python process; the
+# streaming "source" is a directory of JSON files instead of Kafka; the
+# Drift Ledger is backed by fakeredis instead of a real Redis server. Every
+# other config (docker.yaml, cluster.yaml) only changes these values.
+spark:
+  master: "local[*]"
+  extra_conf: {}
+
+stream:
+  source: file
+  file_path: data/stream_in
+  max_files_per_trigger: 1
+  kafka_bootstrap_servers: null
+  topic_docs: null
+  topic_logs: null
+
+ledger:
+  backend: fakeredis
+  redis_host: localhost
+  redis_port: 6379
+  history_path: data/lake/ledger_history.jsonl
+
+lake:
+  root: data/lake
+
+mlflow:
+  tracking_uri: null

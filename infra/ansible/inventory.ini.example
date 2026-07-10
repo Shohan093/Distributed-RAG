@@ -1,0 +1,30 @@
+# Copy to inventory.ini and fill in real VM addresses. Group names match the
+# docker-compose.cluster.yml profile names 1:1 (see PLAN.md 8.2) -- site.yml
+# uses the group name as the --profile value, so adding a VM to a group is
+# the entire "add capacity" operation for that role.
+#
+# A single VM can belong to more than one group (e.g. small deployments
+# often co-locate storage+spark-master); a VM belonging to N groups just
+# starts N profiles' worth of containers when site.yml runs against it.
+
+[broker]
+broker-vm-1 ansible_host=10.0.0.11
+
+[spark_master]
+spark-master-vm-1 ansible_host=10.0.0.12
+
+[spark_worker]
+spark-worker-vm-1 ansible_host=10.0.0.13
+spark-worker-vm-2 ansible_host=10.0.0.14
+
+[storage]
+storage-vm-1 ansible_host=10.0.0.15
+
+[client]
+client-vm-1 ansible_host=10.0.0.16
+
+[all:vars]
+ansible_user=ubuntu
+ansible_ssh_private_key_file=~/.ssh/driftdrag_vm_key
+repo_url=https://example.invalid/your-org/drift-drag.git
+repo_branch=main

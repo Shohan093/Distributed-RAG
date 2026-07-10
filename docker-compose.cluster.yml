@@ -1,0 +1,48 @@
+# Multi-VM overlay. This file changes NOTHING about the application or the
+# base service definitions in docker-compose.yml -- it only (a) tags each
+# service with a "profile" matching a VM role, so a given VM starts just its
+# own services, and (b) switches from the single-host bridge network to
+# host networking, since cross-VM traffic can't ride docker's internal
+# bridge. That is the whole "shift to multiple virtual machines" story:
+#
+#   # single VM, everything (unchanged from before):
+#   docker compose up
+#
+#   # N VMs: on each VM, set VM_ROLE/VM_ADVERTISED_HOST in .env (see
+#   # .env.example) to that VM's role and routable IP, point every other
+#   # *_HOST var at the other VMs' IPs, then:
+#   docker compose -f docker-compose.yml -f docker-compose.cluster.yml --profile ${VM_ROLE} up
+#
+# network_mode: host only works on Linux hosts -- exactly the target (Linux
+# VMs), not Docker Desktop on Mac/Windows, which is why this is an overlay
+# and not the default file.
+services:
+  kafka:
+    profiles: ["broker"]
+    network_mode: host
+
+  redis:
+    profiles: ["storage"]
+    network_mode: host
+
+  minio:
+    profiles: ["storage"]
+    network_mode: host
+
+  minio-init:
+    profiles: ["storage"]
+    network_mode: host
+
+  spark-master:
+    profiles: ["spark_master"]
+    network_mode: host
+
+  spark-worker:
+    profiles: ["spark_worker"]
+    network_mode: host
+    environment:
+      SPARK_MASTER_URL: spark://${SPARK_MASTER_HOST:-spark-master}:7077
+
+  mlflow:
+    profiles: ["storage"]
+    network_mode: host

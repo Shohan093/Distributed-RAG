@@ -1,35 +1,23 @@
-# Python
+# Local-only portable JDK/winutils shim (see scripts/env.ps1) -- never
+# shipped to VMs, which provision Java themselves (see DEPLOYMENT.md).
+.tools/
+
+# Generated data-lake / stream-source content from smoke tests and real runs.
+data/
+!data/.gitkeep
+
+.env
+
 __pycache__/
 *.pyc
-.venv/
-venv/
+.pytest_cache/
+*.egg-info/
 
-# Scala
-target/
-project/target/
-project/project/
+# Scala/sbt build outputs
+scala/**/target/
+scala/**/project/target/
+scala/**/project/project/
 
-# Metals
-.metals/
-
-# Spark
-metastore_db/
-spark-warehouse/
-
-# Data
-data/
-data/raw/
-data/processed/
-data/embeddings/
-data/indexes/
-
-# Logs
-logs/
-*.log
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
+# Hydra run outputs
+outputs/
+multirun/

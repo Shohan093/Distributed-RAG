@@ -1,0 +1,30 @@
+# Single-VM, all-services-in-Docker profile (docker-compose.yml, no
+# cluster.yml overlay). Same job code as local.yaml -- only endpoints change.
+spark:
+  master: spark://localhost:7077
+  extra_conf:
+    spark.jars.packages: org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.3
+    spark.hadoop.fs.s3a.endpoint: http://localhost:9000
+    spark.hadoop.fs.s3a.access.key: ${oc.env:MINIO_ROOT_USER,driftdrag}
+    spark.hadoop.fs.s3a.secret.key: ${oc.env:MINIO_ROOT_PASSWORD,driftdrag-dev-only}
+    spark.hadoop.fs.s3a.path.style.access: "true"
+
+stream:
+  source: kafka
+  file_path: null
+  max_files_per_trigger: null
+  kafka_bootstrap_servers: ${oc.env:KAFKA_BOOTSTRAP_SERVERS,localhost:9092}
+  topic_docs: ${oc.env:KAFKA_TOPIC_DOCS,docs-raw}
+  topic_logs: ${oc.env:KAFKA_TOPIC_LOGS,logs-raw}
+
+ledger:
+  backend: redis
+  redis_host: ${oc.env:REDIS_HOST,localhost}
+  redis_port: ${oc.env:REDIS_PORT,6379}
+  history_path: data/lake/ledger_history.jsonl
+
+lake:
+  root: s3a://${oc.env:MINIO_BUCKET,driftdrag-lake}
+
+mlflow:
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://localhost:5000}

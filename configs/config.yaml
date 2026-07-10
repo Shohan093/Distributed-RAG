@@ -1,0 +1,9 @@
+defaults:
+  - infra: local
+  - experiment: e1_degradation
+  - _self_
+
+run_name: driftdrag-dev
+seed: 0
+num_shards: ${oc.env:NUM_SHARDS,32}
+embedding_dim: ${oc.env:EMBEDDING_DIM,128}

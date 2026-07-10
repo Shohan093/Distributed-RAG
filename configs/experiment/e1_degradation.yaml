@@ -1,0 +1,15 @@
+# E1 -- degradation quantification (RQ1). See PLAN.md Section 3.
+# Sweep axes are left as lists; scripts/run_e1.sh expands the grid (one
+# Hydra multirun per (num_transitions, stale_fraction, num_shards, corpus)
+# combination) so the same job/config pair drives the 10M pilot and the
+# 100M headline run merely by changing `corpus_size`.
+name: e1_degradation
+datasets: [msmarco, nq, hotpotqa, fever, fiqa]
+model_transitions: [1, 2, 3, 4]
+stale_shard_fraction: [0.0, 0.25, 0.5, 0.75, 1.0]
+num_shards: [32, 64, 128, 256]
+corpus_size: [10000000, 50000000, 100000000]
+embedding_backend: hashing   # swap to sentence-transformer for real runs
+seeds: [0, 1, 2, 3, 4]
+metrics: [recall@1, recall@10, recall@100, ndcg@10, mrr, forgetting]
+baselines: [misaligned, full_reindex_oracle]

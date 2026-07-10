@@ -1,0 +1,20 @@
+# Pin to matching Spark image tags in docker-compose.yml (apache/spark:3.5.3)
+# and scala/shard-partitioner/build.sbt (sparkVersion) when bumping -- driver
+# and cluster must share a major.minor version once jobs run against
+# spark://spark-master:7077 instead of local[*]. This sandbox happens to
+# have pyspark 4.1.2 pre-installed (newest wheel available for Python 3.14);
+# that is fine for the local[*]/file-source smoke test in scripts/, which
+# never talks to the dockerized cluster, but before submitting to
+# docker-compose's spark-master use a 3.5.3 venv to match.
+pyspark==3.5.3
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.3
+pandas>=2.1
+pyarrow>=14.0
+redis>=5.0
+faiss-cpu>=1.7
+hydra-core>=1.3
+mlflow>=2.10
+pytest>=8.0
+fakeredis>=2.20
