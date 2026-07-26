@@ -22,6 +22,8 @@ data/raw/
 data/processed/
 data/embeddings/
 data/indexes/
+*.npy
+*.json
 
 # Logs
 logs/

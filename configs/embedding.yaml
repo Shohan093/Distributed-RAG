@@ -20,3 +20,8 @@ epochs:
 paths:
   cleaned_data_template: "data/generation{epoch}/cleaned"
   embeddings_output_template: "embeddings/generation{epoch}/{model_key}"
+
+calibration:
+  anchor_ids_template: "checkpoints/calibration_ids/epoch{epoch}.json"
+  texts_output: "data/calibration/calibration_texts.parquet"
+  embeddings_output_template: "embeddings/calibration/{model_key}"
