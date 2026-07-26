@@ -30,18 +30,19 @@ CODE_RSYNC_OPTS=(
     --exclude "*.pyo"
 
     # Local project data
-    --exclude "data/raw/"
-    --exclude "data/generation*/"
+    --exclude "/data/raw/"
+    --exclude "/data/generation*/"
 
     # Generated ML artifacts
     --exclude "/embeddings/"
-    --exclude "indexes/"
-    --exclude "checkpoints/"
-    --exclude "results/"
+    --exclude "/indexes/"
+    --exclude "/checkpoints/"
+    --exclude "/results/"
 
     # Spark build artifacts
-    --exclude "spark/target/"
-    --exclude ".metals/"
+    --exclude "/spark/project/target/"
+    --exclude "/spark/target/"
+    --exclude "/.metals/"
 
 )
 

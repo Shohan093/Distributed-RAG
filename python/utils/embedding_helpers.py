@@ -34,7 +34,7 @@ def checkpointed_encode(model, texts, doc_ids, output_dir, batch_size=2000):
         batch_texts = texts[start:end]
 
         print(f"Batch {batch_idx + 1}/{n_batches} ({start}:{end})...")
-        batch_embeddings = model.encode(batch_texts, show_progress_bar=False, normalize_embeddings=True)
+        batch_embeddings = model.encode(batch_texts, show_progress_bar=False, normalize_embeddings=True, batch_size=8)
 
         batch_path = os.path.join(checkpoint_dir, f"batch_{batch_idx:05d}.npy")
         np.save(batch_path, batch_embeddings)
