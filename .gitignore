@@ -24,6 +24,7 @@ data/embeddings/
 data/indexes/
 *.npy
 *.json
+*.txt
 
 # Logs
 logs/
