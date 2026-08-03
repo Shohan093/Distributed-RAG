@@ -30,6 +30,9 @@ data/indexes/
 logs/
 *.log
 
+# Results
+results/
+
 # IDE
 .vscode/
 .idea/

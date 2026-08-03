@@ -1,5 +1,7 @@
+import datetime
 import json
 import os
+import subprocess
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,6 +16,13 @@ from scipy.linalg import orthogonal_procrustes
 
 def normalize(x):
     return x / np.linalg.norm(x, axis=1, keepdims=True)
+
+
+def get_git_commit():
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT).decode().strip()
+    except Exception:
+        return "unknown"
 
 
 def ndcg_and_recall_at_10(query_ids, ranked_doc_ids_per_query):
@@ -52,7 +61,7 @@ def load_eval_queries(epoch, model_key):
 def retrieve_and_score(query_emb, query_ids, index_emb, index_ids, label):
     index_norm = normalize(index_emb)
     query_norm = normalize(query_emb)
-    sims = query_norm @ index_norm.T  # (n_queries, n_index_docs)
+    sims = query_norm @ index_norm.T
     ranked = np.argsort(-sims, axis=1)
     ranked_doc_ids = [[index_ids[j] for j in row] for row in ranked]
     ndcg, recall = ndcg_and_recall_at_10(query_ids, ranked_doc_ids)
@@ -60,14 +69,15 @@ def retrieve_and_score(query_emb, query_ids, index_emb, index_ids, label):
     return ndcg, recall
 
 
-def evaluate_transition(epoch, target_model_key):
+def evaluate_transition(epoch, target_model_key, all_results):
     print(f"\n=== Epoch {epoch}: target model = {target_model_key} ===")
 
     index_emb, index_ids = load_eval_index(epoch, target_model_key)
 
     # --- Oracle: native query vs native index ---
     oracle_q_emb, oracle_q_ids = load_eval_queries(epoch, target_model_key)
-    retrieve_and_score(oracle_q_emb, oracle_q_ids, index_emb, index_ids, f"Oracle (epoch {epoch})")
+    ndcg, recall = retrieve_and_score(oracle_q_emb, oracle_q_ids, index_emb, index_ids, f"Oracle (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "oracle", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(oracle_q_ids)})
 
     if target_model_key == "v3":
         print("(No compensation story for v3 -- oracle sanity check only)")
@@ -85,17 +95,33 @@ def evaluate_transition(epoch, target_model_key):
 
     # --- Naive: raw v3 query vs target index ---
     v3_q_emb, v3_q_ids = load_eval_queries(epoch, "v3")
-    retrieve_and_score(v3_q_emb, v3_q_ids, index_emb, index_ids, f"Naive (epoch {epoch})")
+    ndcg, recall = retrieve_and_score(v3_q_emb, v3_q_ids, index_emb, index_ids, f"Naive (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "naive", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
 
     # --- Compensated: v3 query x R vs target index ---
     compensated_emb = v3_q_emb @ R
-    retrieve_and_score(compensated_emb, v3_q_ids, index_emb, index_ids, f"Compensated (epoch {epoch})")
+    ndcg, recall = retrieve_and_score(compensated_emb, v3_q_ids, index_emb, index_ids, f"Compensated (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "compensated", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
 
 
 def main():
-    evaluate_transition(1, "v1")
-    evaluate_transition(2, "v2")
-    evaluate_transition(3, "v3")
+    all_results = []
+
+    evaluate_transition(1, "v1", all_results)
+    evaluate_transition(2, "v2", all_results)
+    evaluate_transition(3, "v3", all_results)
+
+    os.makedirs("results/tables", exist_ok=True)
+    output = {
+        "generated_at": datetime.datetime.now().isoformat(),
+        "git_commit": get_git_commit(),
+        "results": all_results,
+    }
+    output_path = "results/tables/adapter_evaluation.json"
+    with open(output_path, "w") as f:
+        json.dump(output, f, indent=2)
+
+    print(f"\nResults saved to {output_path} (commit {output['git_commit'][:8]})")
 
 
 if __name__ == "__main__":
