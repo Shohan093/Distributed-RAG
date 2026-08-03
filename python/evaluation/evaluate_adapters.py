@@ -100,8 +100,27 @@ def evaluate_transition(epoch, target_model_key, all_results):
 
     # --- Compensated: v3 query x R vs target index ---
     compensated_emb = v3_q_emb @ R
-    ndcg, recall = retrieve_and_score(compensated_emb, v3_q_ids, index_emb, index_ids, f"Compensated (epoch {epoch})")
-    all_results.append({"epoch": epoch, "condition": "compensated", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
+    ndcg, recall = retrieve_and_score(compensated_emb, v3_q_ids, index_emb, index_ids, f"L1 compensated (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "l1_compensated", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
+    
+    # --- L0: global mean-shift only ---
+    l0_delta = np.load(f"checkpoints/adapters/L0_v3_to_{target_model_key}.npy")
+    l0_compensated_emb = v3_q_emb + l0_delta
+    ndcg, recall = retrieve_and_score(l0_compensated_emb, v3_q_ids, index_emb, index_ids, f"L0 compensated (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "l0_compensated", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
+
+    # --- L2: global rotation + nearest-cluster residual bias ---
+    l2_centroids = np.load(f"checkpoints/adapters/L2_centroids_v3_to_{target_model_key}.npy")
+    l2_biases = np.load(f"checkpoints/adapters/L2_biases_v3_to_{target_model_key}.npy")
+
+    rotated_query = v3_q_emb @ R
+    # assign each query to its nearest v3-space cluster centroid
+    dists_to_centroids = np.linalg.norm(v3_q_emb[:, None, :] - l2_centroids[None, :, :], axis=2)
+    nearest_cluster = np.argmin(dists_to_centroids, axis=1)
+    l2_compensated_emb = rotated_query + l2_biases[nearest_cluster]
+
+    ndcg, recall = retrieve_and_score(l2_compensated_emb, v3_q_ids, index_emb, index_ids, f"L2 compensated (epoch {epoch})")
+    all_results.append({"epoch": epoch, "condition": "l2_compensated", "ndcg_at_10": ndcg, "recall_at_10": recall, "n_queries": len(v3_q_ids)})
 
 
 def main():
