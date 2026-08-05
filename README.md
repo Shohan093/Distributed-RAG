@@ -188,7 +188,6 @@ Full breakdown of a real distributed query: **query encoding (~65–90ms, CPU-bo
 ## 9. What's Explicitly Out of Scope / Not Built
 
 - **Generation** — the system returns ranked, retrieved documents; there is no LLM call synthesizing an answer. This is a retrieval system with an intentionally unimplemented "optional" generation stage, per the original design.
-- **Direct comparison against prior work (DARLA, QDC)** — cited as related work in the literature review, but not re-implemented; both assume different problem framings (frozen encoder / task-ID-based continual learning) that don't map directly onto our setup. Stated as an explicit, deliberate scope limitation.
 - **Drift detection** (MMD / anchor residual) — descoped early; our simulated setup has known, controlled generation boundaries, so adaptive drift-triggering wasn't necessary for the core research question.
 - **Docker Compose packaging** — deliberately deprioritized once real VM infrastructure was working; not needed since the professor evaluates the VM-based system directly.
 
@@ -202,23 +201,22 @@ Everything (router, shard, adapters, fusion, FAISS wiring, HTTP services) was ha
 
 ```
 drift-rag/
-├── spark/                    # Scala/Spark ingestion pipeline
+├── spark/                          # Scala/Spark ingestion pipeline
 ├── python/
-│   ├── embeddings/           # corpus + calibration embedding scripts
-│   ├── adapters/             # L0/L1/L2 training
-│   ├── retrieval/            # router, shard, FAISS index building, HTTP services
-│   ├── evaluation/           # adapter eval, index comparison, cost baseline, latency
-│   ├── diagnostics/          # early NFCorpus validation work
-│   └── utils/                # shared config/embedding helpers
-├── configs/embedding.yaml    # single source of truth: models, paths, epochs
-├── scripts/                  # deploy_code.sh, deploy_data.sh, download_ccnews.sh
-├── data/                     # raw + cleaned corpus (per epoch)
-├── embeddings/               # corpus + calibration embeddings (per epoch/model)
-├── indexes/                  # flat + ivf FAISS indexes (per epoch)
-├── checkpoints/adapters/     # trained L0/L1/L2 adapter weights
+│   ├── embeddings/                 # corpus + calibration embedding scripts
+│   ├── adapters/                   # L0/L1/L2 training
+│   ├── retrieval/                  # router, shard, FAISS index building, HTTP services
+│   ├── evaluation/                 # adapter eval, index comparison, cost baseline, latency
+│   └── utils/                      # shared config/embedding helpers
+├── configs/embedding.yaml          # single source of truth: models, paths, epochs
+├── scripts/                        # deploy_code.sh, deploy_data.sh, download_ccnews.sh
+├── data/                           # raw + cleaned corpus (per epoch)
+├── embeddings/                     # corpus + calibration embeddings (per epoch/model)
+├── indexes/                        # flat + ivf FAISS indexes (per epoch)
+├── checkpoints/calibration_ids/    # trained L0/L1/L2 adapter weights
 └── results/
-    ├── tables/                # raw JSON results (evaluation, cost, latency)
-    └── figures/                # PNG figures generated from the tables
+    ├── tables/                     # raw JSON results (evaluation, cost, latency)
+    └── figures/                    # PNG figures generated from the tables
 ```
 
 ## 12. VM Roles Quick Reference
