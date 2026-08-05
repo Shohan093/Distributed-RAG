@@ -91,11 +91,32 @@ def plot_recovery_ratio(results, filename):
     plt.close(fig)
     print(f"Saved results/figures/{filename}")
 
+def plot_latency_breakdown():
+    with open("results/tables/timing_breakdown.json") as f:
+        data = json.load(f)
+
+    stages = ["encode", "shard_fanout", "fuse"]
+    means = [np.mean(data[s]) for s in stages]
+    colors = ["#378ADD", "#D85A30", "#639922"]
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.bar(stages, means, color=colors)
+    ax.set_ylabel("Time (ms)")
+    ax.set_title(f"Query latency breakdown (mean of {len(data[stages[0]])} requests)")
+    for i, v in enumerate(means):
+        ax.text(i, v + 1, f"{v:.1f}ms", ha="center")
+    fig.tight_layout()
+
+    os.makedirs("results/figures", exist_ok=True)
+    fig.savefig("results/figures/latency_breakdown.png", dpi=150)
+    plt.close(fig)
+    print("Saved results/figures/latency_breakdown.png")
 
 def main():
     results = load_results()
     plot_full_ablation(results, "ndcg_at_10", "NDCG@10", "ndcg_full_ablation.png")
     plot_full_ablation(results, "recall_at_10", "Recall@10", "recall_full_ablation.png")
+    plot_latency_breakdown()
     plot_recovery_ratio(results, "recovery_ratio_l0_l1_l2.png")
 
 
